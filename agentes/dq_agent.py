@@ -2,6 +2,7 @@ from agentes.base import Agent
 import numpy as np
 from collections import defaultdict
 import pickle
+import random
 
 class QAgent(Agent):
     """
@@ -34,21 +35,75 @@ class QAgent(Agent):
         Discretiza el estado continuo en un estado discreto (tupla).
         COMPLETAR: Implementar la discretización adecuada para el entorno.
         """
-        # Ejemplo:
-        # return (player_y_bin, player_vel_bin, ...)
-        raise NotImplementedError("Completar la función de discretización de estado")
+
+        # Definir dimensiones estándar del juego
+
+        screen_width = self.game.width
+        screen_height = self.game.height
+
+        # Bins por variable
+        n_bins_y = 10
+        n_bins_vel = 5
+        n_bins_dist = 10
+
+        # Normalizar posiciones y distancias
+        def discretize(value, max_value, bins):
+            norm = value / max_value
+            return min(int(norm * bins), bins - 1)
+
+        def discretize_vel(value, min_val=-10, max_val=10, bins=5):
+            norm = (value - min_val) / (max_val - min_val)
+            return min(int(norm * bins), bins - 1)
+
+        # Discretizar cada variable del estado
+        player_y_bin = discretize(state["player_y"], screen_height, n_bins_y)
+        player_vel_bin = discretize_vel(state["player_vel"])
+        
+        pipe_dist_bin = discretize(state["next_pipe_dist_to_player"], screen_width, n_bins_dist)
+        pipe_top_y_bin = discretize(state["next_pipe_top_y"], screen_height, n_bins_y)
+        pipe_bottom_y_bin = discretize(state["next_pipe_bottom_y"], screen_height, n_bins_y)
+
+        next_pipe_dist_bin = discretize(state["next_next_pipe_dist_to_player"], screen_width, n_bins_dist)
+        next_pipe_top_y_bin = discretize(state["next_next_pipe_top_y"], screen_height, n_bins_y)
+        next_pipe_bottom_y_bin = discretize(state["next_next_pipe_bottom_y"], screen_height, n_bins_y)
+
+        # Retornar el estado discretizado como tupla
+        return (
+            player_y_bin,
+            player_vel_bin,
+            pipe_dist_bin,
+            pipe_top_y_bin,
+            pipe_bottom_y_bin,
+            next_pipe_dist_bin,
+            next_pipe_top_y_bin,
+            next_pipe_bottom_y_bin
+        )
 
     def act(self, state):
         """
         Elige una acción usando epsilon-greedy sobre la Q-table.
         COMPLETAR: Implementar la política epsilon-greedy.
         """
-        # Sugerencia:
-        # - Discretizar el estado
-        # - Con probabilidad epsilon elegir acción aleatoria
-        # - Si no, elegir acción con mayor Q-value
-        raise NotImplementedError("Completar la función de selección de acción (act)")
+        # Discretizar el estado continuo
+        discrete_state = self.discretize_state(state)
 
+        # Inicializar la entrada en la Q-table si no existe
+        if discrete_state not in self.q_table:
+            self.q_table[discrete_state] = [0.0 for _ in self.actions]
+
+        # Estrategia epsilon-greedy
+        if random.random() < self.epsilon:
+            # Explorar: elegir acción aleatoria
+            return random.choice(self.actions)
+        else:
+            # Explotar: elegir la acción con mayor Q-valor
+            q_values = self.q_table[discrete_state]
+            max_q = max(q_values)
+            # Buscar los índices con máximo Q
+            best_action_indices = [i for i, q in enumerate(q_values) if q == max_q]
+            best_action_index = random.choice(best_action_indices)
+            return self.actions[best_action_index] 
+        
     def update(self, state, action, reward, next_state, done):
         """
         Actualiza la Q-table usando la regla de Q-learning.
