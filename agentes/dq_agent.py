@@ -49,10 +49,7 @@ class QAgent(Agent):
             bin_value(state['player_vel'], bins['player_vel'], -20, 20),
             bin_value(state['next_pipe_dist_to_player'], bins['pipe_dist'], 0, 288),
             bin_value(state['next_pipe_top_y'], bins['pipe_top_y'], 0, 512),
-            bin_value(state['next_pipe_bottom_y'], bins['pipe_bottom_y'], 0, 512),
-            # bin_value(state['next_next_pipe_dist_to_player'], bins['pipe_dist'], 0, 288),
-            # bin_value(state['next_next_pipe_top_y'], bins['pipe_top_y'], 0, 512),
-            # bin_value(state['next_next_pipe_bottom_y'], bins['pipe_bottom_y'], 0, 512),
+            bin_value(state['next_pipe_bottom_y'], bins['pipe_bottom_y'], 0, 512)
         )
 
 

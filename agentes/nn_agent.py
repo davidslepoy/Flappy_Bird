@@ -10,7 +10,7 @@ class NNAgent(Agent):
     def __init__(self, actions, game=None, model_path='flappy_q_nn_model'):
         super().__init__(actions, game)
         # Cargar el modelo entrenado
-        self.model = tf.keras.models.load_model(model_path)
+        self.model = tf.keras.models.load_model("flappy_q_nn_model.keras")
 
     def act(self, state):
         """
@@ -21,10 +21,7 @@ class NNAgent(Agent):
             state['player_vel'],
             state['next_pipe_dist_to_player'],
             state['next_pipe_top_y'],
-            state['next_pipe_bottom_y'],
-            # state['next_next_pipe_dist_to_player'],
-            # state['next_next_pipe_top_y'],
-            # state['next_next_pipe_bottom_y']
+            state['next_pipe_bottom_y']
         ], dtype=np.float32).reshape(1, -1)
 
         q_values = self.model.predict(input_state, verbose=0)

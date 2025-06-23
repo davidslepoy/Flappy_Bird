@@ -4,6 +4,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
+
+actions = [119, None]
 # --- Cargar Q-table entrenada ---
 QTABLE_PATH = 'flappy_birds_q_table.pkl'  # Cambia el path si es necesario
 with open(QTABLE_PATH, 'rb') as f:
@@ -21,9 +23,9 @@ y = np.array(y)
 
 # --- Definir la red neuronal ---
 model = keras.Sequential([
-    keras.layers.Input(shape=(8,)),
-    keras.layers.Dense(64, activation='relu'),
-    keras.layers.Dense(64, activation='relu'),
+    keras.layers.Input(shape=(5,)),
+    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(128, activation='relu'),
     keras.layers.Dense(len(actions), activation='linear')
 ])
 
@@ -32,19 +34,14 @@ model.compile(optimizer='adam', loss='mse')
 
 # --- Entrenar la red neuronal ---
 # COMPLETAR: Ajustar hiperparámetros según sea necesario
-history = model.fit(X, y, epochs=50, batch_size=64, verbose=1, validation_split=0.1)
+history = model.fit(X, y, epochs=100, batch_size=64, verbose=1, validation_split=0.1)
 
 # --- Mostrar resultados del entrenamiento ---
-model = keras.Sequential([
-    keras.layers.Input(shape=(8,)),
-    keras.layers.Dense(64, activation='relu'),
-    keras.layers.Dense(64, activation='relu'),
-    keras.layers.Dense(len(actions), activation='linear')
-])
-
+train_loss = model.evaluate(X, y, verbose=0)
+print(f"Error cuadrático medio final: {train_loss:.4f}")
 # --- Guardar el modelo entrenado ---
 # COMPLETAR: Cambia el nombre si lo deseas
-model.save('flappy_q_nn_model')
+model.save('flappy_q_nn_model.keras')
 print('Modelo guardado como TensorFlow SavedModel en flappy_q_nn_model/')
 
 # --- Notas para los alumnos ---

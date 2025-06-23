@@ -32,7 +32,11 @@ except (ValueError, ModuleNotFoundError, AttributeError):
     sys.exit(1)
 
 # Inicializar el agente
-agent = AgentClass(actions, game, load_q_table_path="flappy_birds_q_table_final.pkl")
+if class_name == "NNAgent":
+    agent = AgentClass(actions, game)
+else:
+    agent = AgentClass(actions, game, load_q_table_path="flappy_birds_q_table_final.pkl")
+
 agent.epsilon = 0
 
 # Agente con acciones aleatorias
