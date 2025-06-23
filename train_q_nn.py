@@ -3,11 +3,12 @@ import pickle
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras.callbacks import EarlyStopping
 
 
 actions = [119, None]
 # --- Cargar Q-table entrenada ---
-QTABLE_PATH = 'flappy_birds_q_table.pkl'  # Cambia el path si es necesario
+QTABLE_PATH = 'flappy_birds_q_table_final.pkl'  # Cambia el path si es necesario
 with open(QTABLE_PATH, 'rb') as f:
     q_table = pickle.load(f)
 
@@ -19,12 +20,13 @@ for state, q_values in q_table.items():
     X.append(state)
     y.append(q_values)
 X = np.array(X)
-y = np.array(y)
 
+
+y = np.array(y)
 # --- Definir la red neuronal ---
 model = keras.Sequential([
     keras.layers.Input(shape=(5,)),
-    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(64, activation='relu'),
     keras.layers.Dense(128, activation='relu'),
     keras.layers.Dense(len(actions), activation='linear')
 ])
@@ -34,13 +36,19 @@ model.compile(optimizer='adam', loss='mse')
 
 # --- Entrenar la red neuronal ---
 # COMPLETAR: Ajustar hiperparámetros según sea necesario
-history = model.fit(X, y, epochs=100, batch_size=64, verbose=1, validation_split=0.1)
+
+early_stop = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
+
+history = model.fit(X, y, epochs=100, batch_size=128, validation_split=0.2, callbacks=[early_stop])
+
 
 # --- Mostrar resultados del entrenamiento ---
 train_loss = model.evaluate(X, y, verbose=0)
 print(f"Error cuadrático medio final: {train_loss:.4f}")
 # --- Guardar el modelo entrenado ---
 # COMPLETAR: Cambia el nombre si lo deseas
+print(model.predict(X[10:11], verbose=0),y[10])
+
 model.save('flappy_q_nn_model.keras')
 print('Modelo guardado como TensorFlow SavedModel en flappy_q_nn_model/')
 
